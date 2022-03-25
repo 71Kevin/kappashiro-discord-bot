@@ -2,6 +2,8 @@ FROM node:16
 
 COPY package*.json ./
 
+RUN npm install --save --legacy-peer-deps
+
 RUN npm i
 
 COPY . .
