@@ -7,38 +7,17 @@ declare const Buffer: {
     from: new(arg0: string) => any;
 };
 
-const rabbitMq = {
-    sessions: {},
+export default {
     connection: null,
+    queues: null,
     async connect() {
         try {
-            this.connection = await amqp.connect(`amqp://${process.env.RABBIT_AUTH}@${process.env.RABBIT_HOST}:${process.env.RABBIT_PORT}`);
+            this.connection = await amqp.connect(
+                `amqp://${process.env.RABBIT_USER}:${process.env.RABBIT_PASS}@${process.env.RABBIT_HOST}:${process.env.RABBIT_PORT}`
+            );
+            this.queues = await this.connection.createConfirmChannel();
         } catch (e) {
             logger.error(`connection on rabbitMq failed ${e.message} ${e.stack}`, e, {
-                severity: 'critical',
-                error: e.message
-            });
-        }
-    },
-    async sessionChannel() {
-        return await this.connection.createConfirmChannel();
-    },
-    getChannel(queueId: string | number) {
-        return this.sessions[queueId];
-    },
-    async createQueue(queueId: string | number) {
-        this.sessions[queueId] = await this.sessionChannel();
-        return await this.assertQueue(queueId);
-    },
-    async deleteQueue(queueId: {
-        toString: () => any;
-    }) {
-        try {
-            logger.info(`deleting queue ${queueId}`);
-            let channel = this.getChannel(queueId);
-            return await channel.deleteQueue(queueId.toString());
-        } catch (e) {
-            logger.error(`queue - ${queueId} - error to deleteQueue ${e.message} ${e.stack}`, e, {
                 severity: 'critical',
                 error: e.message
             });
@@ -47,51 +26,37 @@ const rabbitMq = {
     async assertQueue(queueId: {
         toString: () => any;
     }) {
+        let currentQueue: any;
         try {
-            let channel = this.getChannel(queueId);
-            return await channel.assertQueue(queueId.toString(), {
-                durable: false
+            currentQueue = await this.queues.assertQueue(queueId.toString(), {
+                durable: true
             });
         } catch (e) {
-            logger.error(`queue - ${queueId} - error to assertQueue ${e.message} ${e.stack}`, e, {
+            logger.error(`mailingId - ${queueId} - error to assertQueue ${e.message} ${e.stack}`, e, {
                 severity: 'critical',
                 error: e.message
             });
         }
+        return currentQueue;
     },
-    async consumer(queueId: any, concurrency: any, callback: any) {
-        await this.concurrency(queueId, concurrency);
-        let channel = this.getChannel(queueId);
-        channel.consume(queueId, callback, {
+    consume(queueId: any, concurrency: any, callback: {
+        bind: (arg0: any) => any;
+    }) {
+        this.destroy(queueId);
+        this.concurrency(concurrency);
+        this.queues.consume(queueId, callback.bind(this), {
             consumerTag: queueId,
             noAck: false
         });
     },
-    concurrency(queueId: any, concurrency: any) {
-        const channel = this.getChannel(queueId);
-        return channel.prefetch(Number(concurrency));
+    concurrency(quantity: any) {
+        return this.queues.prefetch(Number(quantity), true);
     },
-    ack(message: {
-        fields: {
-            routingKey: any;
-        };
-    }) {
-        let channel = this.getChannel(message.fields.routingKey);
-        return channel.ack(message);
+    ack(message: any) {
+        return this.queues.ack(message);
     },
     destroy(queueId: any) {
-        let channel = this.getChannel(queueId);
-        return channel.cancel(queueId);
-    },
-    async registry(queueId: any, concurrency: any, processQueue = false) {
-        await this.createQueue(queueId);
-        if (processQueue) {
-            return await this.consumer(
-                queueId,
-                concurrency,
-                processQueue
-            );
-        }
+        return this.queues.cancel(queueId);
     },
     send(queueId: any, message: {
         id: string;
@@ -113,5 +78,3 @@ const rabbitMq = {
         return message.id;
     }
 };
-
-export default rabbitMq;

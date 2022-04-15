@@ -6,7 +6,7 @@ import * as petPetGif from 'pet-pet-gif';
 import axios from 'axios';
 import * as Discord from 'discord.js';
 const client: any = new Discord.Client();
-// import rabbit from '../lib/rabbitmq';
+import rabbit from '../lib/rabbitmq';
 
 const kappashiro = {
     bot: async () => {
@@ -54,13 +54,18 @@ const kappashiro = {
                     voice: {
                         channel: any;
                     };
-                };
+                };react: (arg0: any) => any;
             }) => {
-                // await rabbit.send(`${process.env.APP}`, `${message}`);
+                // await rabbit.send(`${process.env.APP_PORT}`, `${message}`);
+
+                if (message.content.includes(`http`) || message.content.includes(`https`)) {
+                    console.log(`message.content: ${message.content}`);
+                    return await message.react(`🥒`);
+                }
 
                 if (!message.content.startsWith(process.env.PREFIX) || message.author.bot) return;
 
-                // rabbit.consume(process.env.APP, Number(process.env.CONCURRENCY), (message: any) => {}
+                // rabbit.consume(process.env.APP_PORT, Number(process.env.CONCURRENCY), (message: any) => {}
 
                 const args: any = message.content.slice(process.env.PREFIX.length).trim().split(/ +/g);
                 const command: string = args.shift().toLowerCase();
@@ -154,6 +159,7 @@ const kappashiro = {
             client.login(process.env.TOKEN);
         } catch (e) {
             logger.error(e.message);
+            // rabbit.ack(message);
         }
     }
 };
