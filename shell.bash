@@ -1,6 +1,6 @@
 #!/bin/bash
-appname="test-2"
-host="root@viena"
+appname="kappashiro-bot"
+host="kevin@127.0.0.1"
 imageid="$(ssh $host docker images --filter=reference=$appname --format "{{.ID}}")"
 
 echo $1 $2
