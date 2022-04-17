@@ -2,11 +2,11 @@ import {
     logger
 } from '../lib/logger';
 import * as fs from 'fs';
-import * as petPetGif from 'pet-pet-gif';
+import user from '../lib/user';
 import axios from 'axios';
 import * as Discord from 'discord.js';
 const client: any = new Discord.Client();
-import rabbit from '../lib/rabbitmq';
+// import rabbit from '../lib/rabbitmq';
 
 const kappashiro = {
     bot: async () => {
@@ -40,7 +40,7 @@ const kappashiro = {
             }, 1000 * 60 * 60);
 
             client.on('message', async (message: {
-                content: string;author: {
+                content: string;react: (arg0: string) => any;author: {
                     bot: any;
                 };channel: {
                     send: (arg0: string | Discord.MessageAttachment) => void;type: string;bulkDelete: (arg0: number, arg1: boolean) => any;
@@ -49,32 +49,39 @@ const kappashiro = {
                         first: () => any;
                     };members: {
                         first: () => any;
+                    };roles: {
+                        first: () => any;
                     };
                 };member: {
                     voice: {
                         channel: any;
                     };
-                };react: (arg0: any) => any;
+                };guild: {
+                    members: {
+                        cache: any[];
+                    };
+                };
             }) => {
                 // await rabbit.send(`${process.env.APP_PORT}`, `${message}`);
 
-                if (message.content.includes(`http`) || message.content.includes(`https`)) {
-                    console.log(`message.content: ${message.content}`);
+                if (message.content.includes(`http`) && !message.content.includes(`gif`) && !message.content.includes(`mp4`) && !message.content.includes(`webm`) && !message.content.includes(`mov`)) {
+                    logger.info(`url: ${message.content}`);
                     return await message.react(`🥒`);
                 }
 
-                if (!message.content.startsWith(process.env.PREFIX) || message.author.bot) return;
+                if (!message.content.startsWith(process.env.PREFIX) || message.author.bot) {
+                    return;
+                }
 
-                // rabbit.consume(process.env.APP_PORT, Number(process.env.CONCURRENCY), (message: any) => {}
+                // rabbit.consume(process.env.APP_PORT, Number(process.env.CONCURRENCY), (message: any) => {});
 
                 const args: any = message.content.slice(process.env.PREFIX.length).trim().split(/ +/g);
                 const command: string = args.shift().toLowerCase();
+                logger.info(`command: ${command}`);
 
                 if (command === 'ping') {
                     message.channel.send('pong');
-
                 } else if (command === 'help') {
-                    logger.info(`help by ${message.author}`);
                     message.channel.send(`
                 bot made by: 🍪 𝑲𝒆𝒗𝒊𝒏 𝒍 𝑻𝒊𝒏𝒆𝒔𝒉#6426
             commands:
@@ -86,7 +93,6 @@ const kappashiro = {
 
                 } else if (command === 'purge') {
                     const amount: number = parseInt(args[0]);
-                    console.log(`amount: ${amount}`);
                     if (isNaN(amount)) {
                         return await message.reply('Invalid value');
                     } else if (amount <= 0 || amount > 100) {
@@ -112,9 +118,11 @@ const kappashiro = {
                     let avatar: string = member.user.displayAvatarURL({
                         format: "jpg"
                     });
-                    let animatedGif: string = await petPetGif(avatar);
+                    let animatedGif: string | Buffer = await user.pet(avatar);
                     message.channel.send(new Discord.MessageAttachment(animatedGif, 'pet.gif'));
 
+                } else if (command === 'gun') {
+                    return;
                 } else if (command === 'play') {
                     let VC: any = message.member.voice.channel;
                     if (!VC) {
@@ -124,7 +132,6 @@ const kappashiro = {
                         .then(async (connection: {
                             play: (arg0: string) => any;
                         }) => {
-                            console.log(`file: ${args[0]}`);
                             if (args[0] === 'random') {
                                 const playfile: any = fs.createWriteStream(`app/resources/media/audios/random.mp3`);
                                 await axios({
@@ -153,13 +160,30 @@ const kappashiro = {
                                 });
                             }
                         })
+                } else if (command === 'summon') {
+                    const channel: string = message.member.voice.channel;
+                    message.guild.members.cache.forEach((member: {
+                        roles: {
+                            cache: {
+                                has: (arg0: any) => any;
+                            };
+                        };voice: {
+                            setChannel: (arg0: any) => void;
+                        };
+                    }) => {
+                        if (member.roles.cache.has(message.mentions.roles.first())) {
+                            message.channel.send(`${message.author} is moving users to a VC`);
+                            return member.voice.setChannel(channel);
+                        } else {
+                            message.channel.send(`${message.author} you need to specify a role`);
+                        }
+                    });
                 }
                 // rabbit.ack(message);
             });
             client.login(process.env.TOKEN);
         } catch (e) {
             logger.error(e.message);
-            // rabbit.ack(message);
         }
     }
 };

@@ -2,7 +2,6 @@ import {
     logger
 } from '../lib/logger';
 import * as amqp from 'amqplib';
-import * as uuid from 'uuid';
 declare const Buffer: {
     from: new(arg0: string) => any;
 };
@@ -32,7 +31,7 @@ export default {
                 durable: true
             });
         } catch (e) {
-            logger.error(`mailingId - ${queueId} - error to assertQueue ${e.message} ${e.stack}`, e, {
+            logger.error(`queueId - ${queueId} - error to assertQueue ${e.message} ${e.stack}`, e, {
                 severity: 'critical',
                 error: e.message
             });
@@ -58,23 +57,16 @@ export default {
     destroy(queueId: any) {
         return this.queues.cancel(queueId);
     },
-    send(queueId: any, message: {
-        id: string;
-    }) {
-        const channel = this.getChannel(queueId);
-        message.id = uuid.v4();
-        channel.sendToQueue(queueId, new Buffer.from(JSON.stringify(message)), {}, (e: {
-            message: any;stack: any;
-        }, success: any) => {
-            if (e) {
-                console.log(
-                    `RABBITMQ - failed to send message - ${e.message} - ${e.stack}`, {
-                        severity: "critical",
-                        error: e.message
-                    }
-                );
-            }
+    send(queueId: string, message: string) {
+        return new Promise((resolve, reject) => {
+            this.queues.sendToQueue(queueId, new Buffer.from(message), {}, (e: any, success: unknown) => {
+                if (e) {
+                    reject(e);
+                }
+                logger.info(`sent: ${message}`);
+                resolve(success);
+            });
+            return;
         });
-        return message.id;
     }
 };
