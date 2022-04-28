@@ -1,7 +1,5 @@
-module.exports =  {
-    semi:  true,
-    trailingComma:  'all',
-    singleQuote:  true,
-    printWidth:  120,
-    tabWidth:  4,
+module.exports = {
+  semi: true, // Specify if you want to print semicolons at the end of statements
+  singleQuote: true, // If you want to use single quotes
+  arrowParens: 'avoid', // Include parenthesis around a sole arrow function parameter
 };
