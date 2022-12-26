@@ -1,4 +1,4 @@
-# kappashiro-bot
+# kappashiro-discord-bot
 
 work-in-progress
 
