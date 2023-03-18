@@ -1,12 +1,16 @@
 {
   "name": "kappashiro-bot",
-  "version": "1.0.2",
+  "version": "2.0.0",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch & node dist",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "format:check": "prettier --check .",
+    "format:write": "prettier --write .",
+    "lint:check": "eslint .",
+    "lint:fix": "eslint --fix ."
   },
   "author": "github.com/71Kevin",
   "license": "ISC",
@@ -17,9 +21,6 @@
     "discord.js": "^12.3.1",
     "dotenv": "^16.0.0",
     "express": "^4.17.3",
-    "ffmpeg": "^0.0.4",
-    "ffmpeg-static": "^5.0.0",
-    "fluent-ffmpeg": "^2.1.2",
     "gifencoder": "^2.0.1",
     "lodash": "^4.17.21",
     "moment-timezone": "^0.5.34",
@@ -27,7 +28,6 @@
     "winston": "^3.6.0"
   },
   "devDependencies": {
-    "@discordjs/opus": "^0.7.0",
     "@types/amqplib": "^0.8.2",
     "@types/dateformat": "^5.0.0",
     "@types/express": "^4.17.13",
