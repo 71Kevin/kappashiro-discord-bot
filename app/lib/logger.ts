@@ -6,7 +6,7 @@ const customFormat = winston.format.combine(
   winston.format.timestamp(),
   winston.format.simple(),
   winston.format.printf((info): winston.Logform.Format => {
-    const { timestamp, level, message } = info;
+    const { level, message } = info;
 
     const ts = moment().tz('America/Sao_Paulo').format('YYYY/MM/DD HH:mm:ss.SSS');
     return `${ts} [${level}]: ${message}`;
@@ -22,16 +22,16 @@ const winstonLogger = winston.createLogger({
 });
 
 const logger = {
-  error: (message: unknown, ...args: unknown[]): void => {
+  error: (message: unknown, ..._args: unknown[]): void => {
     winstonLogger.error(message);
   },
-  warn: (message: unknown, ...args: unknown[]): void => {
+  warn: (message: unknown, ..._args: unknown[]): void => {
     winstonLogger.warn(message);
   },
-  info: (message: unknown, ...args: unknown[]): void => {
+  info: (message: unknown, ..._args: unknown[]): void => {
     winstonLogger.info(message);
   },
-  debug: (message: unknown, ...args: unknown[]): void => {
+  debug: (message: unknown, ..._args: unknown[]): void => {
     winstonLogger.debug(message);
   },
 };

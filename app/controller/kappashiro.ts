@@ -49,6 +49,10 @@ const kappashiro = {
 
         logger.info(`command: ${command}`);
 
+        let amount;
+
+        let user, avatar, embed, member, avatarUrl, animatedGif;
+
         switch (command) {
           case 'ping':
             message.channel.send('pong');
@@ -56,17 +60,17 @@ const kappashiro = {
 
           case 'help':
             message.channel.send(`
-            bot made by: 🍪 𝑲𝒆𝒗𝒊𝒏 𝒍 𝑻𝒊𝒏𝒆𝒔𝒉#6426
-            commands:
-            **.purge <number>** - Command to delete messages between the value 1 to 100
-            **.avatar <user>** - Command to show someone's profile picture
-            **.pet <user>** - Command to show your affection to someone
-            **.play <number>** - Work in progress
-          `);
+              bot made by: 🍪 𝑲𝒆𝒗𝒊𝒏 𝒍 𝑻𝒊𝒏𝒆𝒔𝒉#6426
+              commands:
+              **.purge <number>** - Command to delete messages between the value 1 to 100
+              **.avatar <user>** - Command to show someone's profile picture
+              **.pet <user>** - Command to show your affection to someone
+              **.play <number>** - Work in progress
+            `);
             break;
 
           case 'purge':
-            const amount = parseInt(args[0], 10);
+            amount = parseInt(args[0], 10);
             if (isNaN(amount) || amount <= 0 || amount > 100) {
               return await message.reply('You must enter a number between 1 and 100');
             }
@@ -76,14 +80,14 @@ const kappashiro = {
             break;
 
           case 'avatar':
-            const user =
+            user =
               message.mentions.users.first() || client.users.cache.get(args[0]) || message.author;
-            const avatar = user.avatarURL({
+            avatar = user.avatarURL({
               dynamic: true,
               format: 'png',
               size: 1024,
             });
-            const embed = new Discord.MessageEmbed()
+            embed = new Discord.MessageEmbed()
               .setColor(`#00000`)
               .setTitle(`Avatar from ${user.username}`)
               .setImage(avatar);
@@ -91,11 +95,11 @@ const kappashiro = {
             break;
 
           case 'pet':
-            const member = message.mentions.members.first() || message.member;
-            const avatarUrl = member.user.displayAvatarURL({
+            member = message.mentions.members.first() || message.member;
+            avatarUrl = member.user.displayAvatarURL({
               format: 'jpg',
             });
-            const animatedGif = await user.pet(avatarUrl);
+            animatedGif = await user.pet(avatarUrl);
             message.channel.send(new Discord.MessageAttachment(animatedGif, 'pet.gif'));
             break;
 

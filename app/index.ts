@@ -6,7 +6,7 @@ import kappashiro from './controller/kappashiro';
 dotenv.config();
 
 (async () => {
-  Server.bootstrap();
+  Server();
   // await rabbit.connect();
   // await rabbit.assertQueue(process.env.APP);
   await kappashiro.bot();
