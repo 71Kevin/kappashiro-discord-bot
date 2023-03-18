@@ -1,35 +1,31 @@
-import express from 'express';
+import express, { Express } from 'express';
 import { logger } from '../lib/logger';
 import router from './router';
 
 class Server {
-  public express: express.Application;
+  private readonly app: Express;
+  private readonly port: number;
 
-  public constructor() {
-    this.express = express();
+  public constructor(port: number) {
+    this.port = port;
+    this.app = express();
     this.middlewares();
     this.routes();
-    this.listen();
   }
 
   private middlewares(): void {
-    this.express.use(
-      express.json({
-        limit: '200MB',
-      }),
-    );
+    this.app.use(express.json({ limit: '200MB' }));
   }
 
   private routes(): void {
-    this.express.use(router);
+    this.app.use(router);
   }
 
-  private listen(): void {
-    const port = process.env.APP_PORT || 3000;
-    this.express.listen(port, () => {
-      logger.info(`kappashiro-bot initialized on port: ${port} 🔊`);
+  public listen(): void {
+    this.app.listen(this.port, () => {
+      logger.info(`Server listening on port ${this.port}`);
     });
   }
 }
 
-export default new Server().express;
+export default Server;
