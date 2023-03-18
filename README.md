@@ -17,6 +17,7 @@ This is a Discord bot based on the character Nitori Kawashiro from Touhou. The b
 ## Libraries Used
 
 The following libraries were used in this project:
+
 - amqplib
 - axios
 - canvas

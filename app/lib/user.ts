@@ -1,5 +1,4 @@
 import * as path from 'path';
-import * as _ from 'lodash';
 import * as GIFEncoder from 'gifencoder';
 import * as Canvas from 'canvas';
 
@@ -19,7 +18,7 @@ const user = {
       backgroundColor: null,
     };
 
-    options = _.defaults(options, defaultOptions);
+    options = { ...defaultOptions, ...options };
 
     const encoder = new GIFEncoder(options.resolution, options.resolution);
 
@@ -67,27 +66,27 @@ const user = {
     return encoder.out.getData();
   },
 
-  gun: async (avatarURL: string | Buffer) => {
+  gun: async (_avatarURL: string | Buffer) => {
     return;
   },
 
-  gum: async (avatarURL: string | Buffer) => {
+  gum: async (_avatarURL: string | Buffer) => {
     return;
   },
 
-  bonk: async (avatarURL: string | Buffer) => {
+  bonk: async (_avatarURL: string | Buffer) => {
     return;
   },
 
-  dualwield: async (avatarURL: string | Buffer) => {
+  dualwield: async (_avatarURL: string | Buffer) => {
     return;
   },
 
-  gospel: async (avatarURL: string | Buffer) => {
+  gospel: async (_avatarURL: string | Buffer) => {
     return;
   },
 
-  grab: async (avatarURL: string | Buffer) => {
+  grab: async (_avatarURL: string | Buffer) => {
     return;
   },
 };
