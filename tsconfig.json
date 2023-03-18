@@ -1,9 +1,21 @@
 {
   "compilerOptions": {
-    "target": "es6",
+    "target": "es2021",
     "module": "commonjs",
     "outDir": "dist",
     "sourceMap": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true
   },

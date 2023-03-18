@@ -1,17 +1,9 @@
-import * as express from 'express';
+import express, { Request, Response } from 'express';
+
 const router = express.Router();
 
-router.get(
-  '/ping',
-  (
-    req: any,
-    res: {
-      send: (arg0: { message: string }) => any;
-    }
-  ) =>
-    res.send({
-      message: 'pong',
-    })
-);
+router.get('/ping', (_req: Request, res: Response<{ message: string }>) => {
+  res.send({ message: 'pong' });
+});
 
 export default router;
