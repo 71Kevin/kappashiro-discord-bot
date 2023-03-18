@@ -1,13 +1,11 @@
-import dotenv from 'dotenv';
+import * as dotenv from 'dotenv';
+dotenv.config();
 import Server from './server/server';
 import kappashiro from './controller/kappashiro';
-// import rabbit from './lib/rabbitmq';
 
-dotenv.config();
-
-(async () => {
-  Server();
-  // await rabbit.connect();
-  // await rabbit.assertQueue(process.env.APP);
+(async function () {
+  const port = process.env.APP_PORT ? parseInt(process.env.APP_PORT, 10) : 3000;
+  const server = new Server(port);
+  server.listen();
   await kappashiro.bot();
 })();
