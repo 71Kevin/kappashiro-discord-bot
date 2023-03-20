@@ -60,7 +60,7 @@ const kappashiro = {
 
           case 'help':
             message.channel.send(`
-              bot made by: 🍪 𝑲𝒆𝒗𝒊𝒏 𝒍 𝑻𝒊𝒏𝒆𝒔𝒉#6426
+              bot made by: кєνιn | тιnєѕн#6426
               commands:
               **.purge <number>** - Command to delete messages between the value 1 to 100
               **.avatar <user>** - Command to show someone's profile picture
