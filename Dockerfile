@@ -1,23 +1,17 @@
-# Utiliza a imagem do Node com a versão LTS atual
-FROM node:lts-alpine
+FROM node:16
 
-# Define o diretório de trabalho
-WORKDIR /app
+COPY package*.json ./
 
-# Copia apenas os arquivos necessários para instalar as dependências
-COPY package.json yarn.lock ./
+RUN npm install -g npm@8.8.0
 
-# Instala as dependências
-RUN yarn install --production --frozen-lockfile
+RUN npm i
 
-# Copia o código-fonte
 COPY . .
 
-# Roda o comando de build
-RUN yarn build
+ADD . . 
 
-# Expõe a porta que a aplicação usa
-EXPOSE 6753
+RUN npm run build
 
-# Define o comando de inicialização da aplicação
-CMD ["yarn", "start"]
+EXPOSE 6010
+
+CMD npm run start

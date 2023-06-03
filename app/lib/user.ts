@@ -1,24 +1,25 @@
-import * as path from 'path';
-import * as GIFEncoder from 'gifencoder';
-import * as Canvas from 'canvas';
+import path from 'path';
+import _ from 'lodash';
+import GIFEncoder from 'gifencoder';
+import { createCanvas, loadImage, CanvasRenderingContext2D } from 'canvas';
 
 interface PetOptions {
-  resolution?: number;
-  delay?: number;
-  backgroundColor?: string | null;
+  resolution: number;
+  delay: number;
+  backgroundColor: string | null;
 }
 
-const user = {
-  pet: async (avatarURL: string | Buffer, options: PetOptions = {}) => {
+class User {
+  public async pet(avatarURL: string | Buffer, options: Partial<PetOptions> = {}): Promise<Buffer> {
     const FRAMES = 10;
-    const petGifCache: Canvas.Image[] = [];
+    const petGifCache: any[] = [];
     const defaultOptions: PetOptions = {
       resolution: 128,
       delay: 20,
       backgroundColor: null,
     };
 
-    options = { ...defaultOptions, ...options };
+    options = _.defaults(options, defaultOptions);
 
     const encoder = new GIFEncoder(options.resolution, options.resolution);
 
@@ -27,10 +28,10 @@ const user = {
     encoder.setDelay(options.delay);
     encoder.setTransparent(0);
 
-    const canvas = Canvas.createCanvas(options.resolution, options.resolution);
-    const ctx = canvas.getContext('2d');
+    const canvas = createCanvas(options.resolution, options.resolution);
+    const ctx: CanvasRenderingContext2D = canvas.getContext('2d');
 
-    const avatar = await Canvas.loadImage(avatarURL);
+    const avatar = await loadImage(avatarURL);
 
     for (let i = 0; i < FRAMES; i++) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -47,8 +48,9 @@ const user = {
       const offsetX = (1 - width) * 0.5 + 0.1;
       const offsetY = 1 - height - 0.08;
 
-      if (i == petGifCache.length)
-        petGifCache.push(await Canvas.loadImage(path.resolve(`./app/img/pet${i}.gif`)));
+      if (i === petGifCache.length) {
+        petGifCache.push(await loadImage(path.resolve(`./app/img/pet${i}.gif`)));
+      }
 
       ctx.drawImage(
         avatar,
@@ -64,31 +66,31 @@ const user = {
 
     encoder.finish();
     return encoder.out.getData();
-  },
+  }
 
-  gun: async (_avatarURL: string | Buffer) => {
+  public async gun(): Promise<void> {
     return;
-  },
+  }
 
-  gum: async (_avatarURL: string | Buffer) => {
+  public async gum(): Promise<void> {
     return;
-  },
+  }
 
-  bonk: async (_avatarURL: string | Buffer) => {
+  public async bonk(): Promise<void> {
     return;
-  },
+  }
 
-  dualwield: async (_avatarURL: string | Buffer) => {
+  public async dualwield(): Promise<void> {
     return;
-  },
+  }
 
-  gospel: async (_avatarURL: string | Buffer) => {
+  public async gospel(): Promise<void> {
     return;
-  },
+  }
 
-  grab: async (_avatarURL: string | Buffer) => {
+  public async grab(): Promise<void> {
     return;
-  },
-};
+  }
+}
 
-export default user;
+export default User;

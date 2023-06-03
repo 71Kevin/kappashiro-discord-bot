@@ -6,7 +6,6 @@ This is a Discord bot based on the character Nitori Kawashiro from Touhou. The b
 
 ## Commands
 
-- gun (under development)
 - pet - creates a GIF with the username provided and returns a photo of the user receiving a petting
 - avatar - displays the avatar of the specified user
 - purge - deletes previous messages

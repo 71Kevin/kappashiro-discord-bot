@@ -1,14 +1,20 @@
 import { logger } from '../lib/logger';
-import * as Discord from 'discord.js';
-// import user from '../lib/user';
+import fs from 'fs';
+import User from '../lib/user';
+import axios from 'axios';
+import Discord from 'discord.js';
 
-const client = new Discord.Client();
+class KappashiroBot {
+  private client: Discord.Client;
 
-const kappashiro = {
-  bot: async () => {
+  constructor() {
+    this.client = new Discord.Client();
+  }
+
+  public start(): void {
     try {
-      client.on('ready', async () => {
-        client.user.setPresence({
+      this.client.on('ready', () => {
+        this.client.user.setPresence({
           status: 'online',
           activity: {
             name: `${process.env.PREFIX}help`,
@@ -25,97 +31,135 @@ const kappashiro = {
           type: 'PLAYING',
         },
       ];
-
       let i = 0;
+      let status = statuses[i];
 
       setInterval(() => {
-        i = i >= statuses.length ? 0 : i;
-        const status = statuses[i++];
-        client.user.setPresence(status);
+        if (!status) {
+          status = statuses[0];
+          i = 0;
+        }
+        this.client.user.setPresence(status);
+        i++;
       }, 1000 * 60 * 60);
 
-      client.on('message', async (message) => {
-        if (message.author.bot || !message.content.startsWith(process.env.PREFIX)) {
+      this.client.on('message', async (message) => {
+        if (
+          message.content.includes('http') &&
+          !message.content.includes('gif') &&
+          !message.content.includes('mp4') &&
+          !message.content.includes('webm') &&
+          !message.content.includes('mov')
+        ) {
+          logger.info(`url: ${message.content}`);
+          await message.react('🥒');
+          return;
+        }
+
+        if (!message.content.startsWith(process.env.PREFIX) || message.author.bot) {
           return;
         }
 
         const args = message.content.slice(process.env.PREFIX.length).trim().split(/ +/g);
-
         const command = args.shift()?.toLowerCase();
 
-        if (!command) {
+        if (command === 'ping') {
+          message.channel.send('pong');
+        } else if (command === 'help') {
+          message.channel.send(`
+            bot made by: кєνιn | тιnєѕн#6426
+            commands:
+            **.purge <number>** - Command to delete messages between the value 1 to 100
+            **.avatar <user>** - Command to show someone's profile picture
+            **.pet <user>** - Command to show your affection to someone
+            **.play <number>** - Work in progress
+          `);
+        } else if (command === 'purge') {
+          const amount = parseInt(args[0]);
+          if (isNaN(amount)) {
+            return await message.reply('Invalid value');
+          } else if (amount <= 0 || amount > 100) {
+            return await message.reply('You must enter a number between 1 and 100');
+          }
+          if (message.channel.type === 'text') {
+            await message.channel.bulkDelete(amount, true);
+          }
+        } else if (command === 'avatar') {
+          const user =
+            message.mentions.users.first() ||
+            this.client.users.cache.get(args[0]) ||
+            message.author;
+          const avatar = user.avatarURL({
+            dynamic: true,
+            format: 'png',
+            size: 1024,
+          });
+          const embed = new Discord.MessageEmbed()
+            .setColor('#00000')
+            .setTitle(`Avatar from ${user.username}`)
+            .setImage(avatar);
+          message.channel.send(embed);
+        } else if (command === 'pet') {
+          const member = message.mentions.members.first() || message.member;
+          const avatar = member.user.displayAvatarURL({
+            format: 'jpg',
+          });
+          const animatedGif = await User.pet(avatar);
+          message.channel.send(new Discord.MessageAttachment(animatedGif, 'pet.gif'));
+        } else if (command === 'gun') {
           return;
-        }
-
-        logger.info(`command: ${command}`);
-
-        let amount;
-
-        let user, avatar, embed, member, avatarUrl, animatedGif;
-
-        switch (command) {
-          case 'ping':
-            message.channel.send('pong');
-            break;
-
-          case 'help':
-            message.channel.send(`
-              bot made by: кєνιn | тιnєѕн#6426
-              commands:
-              **.purge <number>** - Command to delete messages between the value 1 to 100
-              **.avatar <user>** - Command to show someone's profile picture
-              **.pet <user>** - Command to show your affection to someone
-              **.play <number>** - Work in progress
-            `);
-            break;
-
-          case 'purge':
-            amount = parseInt(args[0], 10);
-            if (isNaN(amount) || amount <= 0 || amount > 100) {
-              return await message.reply('You must enter a number between 1 and 100');
+        } else if (command === 'play') {
+          const VC = message.member.voice.channel;
+          if (!VC) {
+            return await message.reply('You are not connected to the voice channel');
+          }
+          await VC.join().then(async (connection) => {
+            if (args[0] === 'random') {
+              const playfile = fs.createWriteStream('app/resources/media/audios/random.mp3');
+              await axios({
+                method: 'get',
+                url: `${process.env.MYINSTANTS_URL}/?type=file`,
+                responseType: 'stream',
+              }).then(async (response) => {
+                response.data.pipe(playfile);
+                const dispatcher = connection.play('app/resources/media/audios/random.mp3');
+                dispatcher.on('finish', () => {
+                  // VC.leave()
+                });
+              });
+            } else {
+              const playfile = fs.createWriteStream('app/resources/media/audios/play.mp3');
+              await axios({
+                method: 'get',
+                url: `${process.env.MYINSTANTS_URL}/?type=file&id=${args[0]}`,
+                responseType: 'stream',
+              }).then(async (response) => {
+                response.data.pipe(playfile);
+                const dispatcher = connection.play('app/resources/media/audios/play.mp3');
+                dispatcher.on('finish', () => {
+                  // VC.leave()
+                });
+              });
             }
-            if (message.channel.type === 'text') {
-              await message.channel.bulkDelete(amount, true);
+          });
+        } else if (command === 'summon') {
+          const channel = message.member.voice.channel;
+          message.guild.members.cache.forEach((member) => {
+            if (member.roles.cache.has(message.mentions.roles.first())) {
+              message.channel.send(`${message.author} is moving users to a VC`);
+              return member.voice.setChannel(channel);
+            } else {
+              message.channel.send(`${message.author} you need to specify a role`);
             }
-            break;
-
-          case 'avatar':
-            user =
-              message.mentions.users.first() || client.users.cache.get(args[0]) || message.author;
-            avatar = user.avatarURL({
-              dynamic: true,
-              format: 'png',
-              size: 1024,
-            });
-            embed = new Discord.MessageEmbed()
-              .setColor(`#00000`)
-              .setTitle(`Avatar from ${user.username}`)
-              .setImage(avatar);
-            message.channel.send(embed);
-            break;
-
-          case 'pet':
-            member = message.mentions.members.first() || message.member;
-            avatarUrl = member.user.displayAvatarURL({
-              format: 'jpg',
-            });
-            animatedGif = await user.pet(avatarUrl);
-            message.channel.send(new Discord.MessageAttachment(animatedGif, 'pet.gif'));
-            break;
-
-          case 'gun':
-            return;
-
-          default:
-            return;
+          });
         }
       });
 
-      client.login(process.env.TOKEN);
+      this.client.login(process.env.TOKEN);
     } catch (e) {
       logger.error(e.message);
     }
-  },
-};
+  }
+}
 
-export default kappashiro;
+export default KappashiroBot;

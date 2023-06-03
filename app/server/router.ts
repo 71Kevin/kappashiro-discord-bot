@@ -1,9 +1,19 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, Router } from 'express';
 
-const router = express.Router();
+interface PingResponse {
+  message: string;
+}
 
-router.get('/ping', (_req: Request, res: Response<{ message: string }>) => {
-  res.send({ message: 'pong' });
-});
+class PingController {
+  public ping(_: Request, res: Response<PingResponse>): void {
+    const response: PingResponse = { message: 'pong' };
+    res.send(response);
+  }
+}
+
+const router: Router = express.Router();
+const pingController: PingController = new PingController();
+
+router.get('/ping', pingController.ping.bind(pingController));
 
 export default router;

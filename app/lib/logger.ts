@@ -1,28 +1,29 @@
-import winston, { format } from 'winston';
+import winston, { format, transports } from 'winston';
 import moment from 'moment-timezone';
 
-const customFormat = format.combine(
-  format.colorize(),
-  format.timestamp(),
-  format.simple(),
-  format.printf((info) => {
-    const { level, message } = info;
+class Logger {
+  private static customFormat = format.combine(
+    format.colorize(),
+    format.timestamp(),
+    format.simple(),
+    format.printf((info) => {
+      const { level, message } = info;
+      const ts = moment().tz('America/Sao_Paulo').format('YYYY/MM/DD HH:mm:ss.SSS');
+      return `${ts} [${level}]: ${message}`;
+    }),
+  );
 
-    const ts = moment().tz('America/Sao_Paulo').format('YYYY/MM/DD HH:mm:ss.SSS');
-    return `${ts} [${level}]: ${message}`;
-  }),
-);
+  public static createLogger(): winston.Logger {
+    const consoleTransport = new transports.Console({
+      format: Logger.customFormat,
+    });
 
-function createLogger(): winston.Logger {
-  const consoleTransport = new winston.transports.Console({
-    format: customFormat,
-  });
-
-  return winston.createLogger({
-    transports: [consoleTransport],
-  });
+    return winston.createLogger({
+      transports: [consoleTransport],
+    });
+  }
 }
 
-const logger = createLogger();
+const logger = Logger.createLogger();
 
 export { logger };
