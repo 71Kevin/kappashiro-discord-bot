@@ -5,7 +5,7 @@ import axios from 'axios';
 import Discord from 'discord.js';
 
 class KappashiroBot {
-  private client: Discord.Client;
+  private client: Discord.Client | any;
 
   constructor() {
     this.client = new Discord.Client();
@@ -43,7 +43,7 @@ class KappashiroBot {
         i++;
       }, 1000 * 60 * 60);
 
-      this.client.on('message', async (message) => {
+      this.client.on('message', async (message: any) => {
         if (
           message.content.includes('http') &&
           !message.content.includes('gif') &&
@@ -60,7 +60,10 @@ class KappashiroBot {
           return;
         }
 
-        const args = message.content.slice(process.env.PREFIX.length).trim().split(/ +/g);
+        const args = message.content
+          .slice(process.env.PREFIX ? process.env.PREFIX.length : '.'.length)
+          .trim()
+          .split(/ +/g);
         const command = args.shift()?.toLowerCase();
 
         if (command === 'ping') {
@@ -113,7 +116,7 @@ class KappashiroBot {
           if (!VC) {
             return await message.reply('You are not connected to the voice channel');
           }
-          await VC.join().then(async (connection) => {
+          await VC.join().then(async (connection: any) => {
             if (args[0] === 'random') {
               const playfile = fs.createWriteStream('app/resources/media/audios/random.mp3');
               await axios({
@@ -144,7 +147,7 @@ class KappashiroBot {
           });
         } else if (command === 'summon') {
           const channel = message.member.voice.channel;
-          message.guild.members.cache.forEach((member) => {
+          message.guild.members.cache.forEach((member: any) => {
             if (member.roles.cache.has(message.mentions.roles.first())) {
               message.channel.send(`${message.author} is moving users to a VC`);
               return member.voice.setChannel(channel);
@@ -156,7 +159,7 @@ class KappashiroBot {
       });
 
       this.client.login(process.env.TOKEN);
-    } catch (e) {
+    } catch (e: any) {
       logger.error(e.message);
     }
   }

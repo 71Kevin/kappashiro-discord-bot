@@ -15,7 +15,7 @@ run_container() {
         "$env" \
         "$cond" \
         --name="$app_name" \
-        -p 6010:6010 \
+        -p 5555:5555 \
         -d \
         --restart=unless-stopped "$app_name"
 }

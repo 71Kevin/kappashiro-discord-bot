@@ -12,6 +12,6 @@ ADD . .
 
 RUN npm run build
 
-EXPOSE 6010
+EXPOSE 5555
 
 CMD npm run start

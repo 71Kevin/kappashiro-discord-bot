@@ -10,7 +10,7 @@ interface PetOptions {
 }
 
 class User {
-  public async pet(avatarURL: string | Buffer, options: Partial<PetOptions> = {}): Promise<Buffer> {
+  public async pet(avatarURL: string | Buffer, options: Object | any = {}) {
     const FRAMES = 10;
     const petGifCache: any[] = [];
     const defaultOptions: PetOptions = {
@@ -25,11 +25,15 @@ class User {
 
     encoder.start();
     encoder.setRepeat(0);
-    encoder.setDelay(options.delay);
+    encoder.setDelay(options.delay || 0);
     encoder.setTransparent(0);
 
     const canvas = createCanvas(options.resolution, options.resolution);
-    const ctx: CanvasRenderingContext2D = canvas.getContext('2d');
+    const ctx: CanvasRenderingContext2D | any = canvas.getContext('2d');
+
+    if (!ctx) {
+      throw new Error('Failed to create CanvasRenderingContext2D');
+    }
 
     const avatar = await loadImage(avatarURL);
 
@@ -93,4 +97,4 @@ class User {
   }
 }
 
-export default User;
+export default new User();
